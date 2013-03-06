@@ -92,7 +92,7 @@ public class MITMProxyServer
 		} else if (args[i].equals("-timeout")) {
 		    timeout = Integer.parseInt(args[++i]) * 1000;
 		} else if( args[i].equals("-pwdFile")) {
-			// Borui Wang
+			// begin Borui Wang implementation
 			try {
 				FileInputStream fstream = new FileInputStream(args[++i]);
 				DataInputStream in = new DataInputStream(fstream);
@@ -104,7 +104,7 @@ public class MITMProxyServer
 			} catch (Exception e) {
 				System.err.println("\n" + "Error: " + e.getMessage());
 			}
-			// Borui Wang
+			// end Borui Wang implementation
 
 		} else if (args[i].equals("-adminPort")) {
 			adminPort = Integer.parseInt(args[++i]);
