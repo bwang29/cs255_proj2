@@ -42,9 +42,9 @@ import javax.net.ssl.X509TrustManager;
  */
 public final class MITMSSLSocketFactory implements MITMSocketFactory
 {
-    final ServerSocketFactory m_serverSocketFactory;
-    final SocketFactory m_clientSocketFactory;
-    final SSLContext m_sslContext;
+    ServerSocketFactory m_serverSocketFactory;
+    SocketFactory m_clientSocketFactory;
+    SSLContext m_sslContext;
 
     public KeyStore ks = null;
 
@@ -108,58 +108,78 @@ public final class MITMSSLSocketFactory implements MITMSocketFactory
 	throws IOException,GeneralSecurityException, Exception
     {
 	this();
-        // TODO(cs255): replace this with code to generate a new (forged) server certificate with a DN of serverDN
-        //   and a serial number of serialNumber.
+	// begin Borui Wang implementation
+    // TODO(cs255): replace this with code to generate a new (forged) server certificate with a DN of serverDN
+    //   and a serial number of serialNumber.
 
 	// You may find it useful to work from the comment skeleton below.
-
-        /*
 	final String keyStoreFile = System.getProperty(JSSEConstants.KEYSTORE_PROPERTY);
 	final char[] keyStorePassword = System.getProperty(JSSEConstants.KEYSTORE_PASSWORD_PROPERTY, "").toCharArray();
 	final String keyStoreType = System.getProperty(JSSEConstants.KEYSTORE_TYPE_PROPERTY, "jks");
+	
 	// The "alias" is the name of the key pair in our keystore. (default: "mykey")
 	String alias = System.getProperty(JSSEConstants.KEYSTORE_ALIAS_PROPERTY);
+	if(alias == null){
+		alias = JSSEConstants.DEFAULT_ALIAS;
+	}
+	System.out.println("keyStoreFile "+keyStoreFile);
+	System.out.println("keyStorePassword "+keyStorePassword);
+	System.out.println("keyStoreType "+keyStoreType);
+	System.out.println("keyStoreAlias "+alias);
 
 	final KeyStore keyStore;
-	
 	if (keyStoreFile != null) {
 	    keyStore = KeyStore.getInstance(keyStoreType);
 	    keyStore.load(new FileInputStream(keyStoreFile), keyStorePassword);
-	    
 	    this.ks = keyStore;
 	} else {
 	    keyStore = null;
 	}
-
+	
 	// Get our key pair and our own DN (not the remote server's DN) from the keystore.
-	PrivateKey privateKey = // . . .
+	KeyStore.PrivateKeyEntry pkEntry = (KeyStore.PrivateKeyEntry)
+	        ks.getEntry(alias, new KeyStore.PasswordProtection(keyStorePassword));
+	PrivateKey privateKey = pkEntry.getPrivateKey();
 	iaik.x509.X509Certificate certificate = new iaik.x509.X509Certificate(keyStore.getCertificate(alias).getEncoded());
-	PublicKey publicKey = // . . .
-	Principal ourDN = // . . .
+	PublicKey publicKey = certificate.getPublicKey();
+	Principal ourDN = certificate.getIssuerDN();
+	System.out.println("private key: " + privateKey);
+	System.out.println("public key: " + publicKey);
+	System.out.println("ourDN: " + ourDN);
+	System.out.println("serverDN: " + serverDN);
 
-	// . . .
+	// create server certificate
 
-	iaik.x509.X509Certificate serverCertificate = // . . .
-
-	// . . .
-
+	iaik.x509.X509Certificate serverCertificate = new iaik.x509.X509Certificate();
+	serverCertificate.setIssuerDN(ourDN);
+	serverCertificate.setSubjectDN(serverDN);
+	serverCertificate.setPublicKey(publicKey);
+	serverCertificate.setSerialNumber(serialNumber);
+	
+	// save our private key to a key store
+	
 	KeyStore serverKeyStore = KeyStore.getInstance(keyStoreType);
-
-	// . . .
+	serverKeyStore.load(null,keyStorePassword);
+	serverKeyStore.setCertificateEntry(alias, serverCertificate);
+	serverKeyStore.setEntry(alias, pkEntry, new KeyStore.PasswordProtection(keyStorePassword));
+	
+	
+	// setup new certificate's key factory
 	
 	final KeyManagerFactory keyManagerFactory =
 	    KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-	keyManagerFactory.init(serverKeyStore, emptyPassword);
+	keyManagerFactory.init(serverKeyStore, keyStorePassword);
 
 	m_sslContext = SSLContext.getInstance("SSL");
 	m_sslContext.init(keyManagerFactory.getKeyManagers(),
 			  new TrustManager[] { new TrustEveryone() },
 			  null);
 
-	m_clientSocketFactory = // . . .
-	m_serverSocketFactory = // . . .
-
-	*/
+	m_clientSocketFactory = m_sslContext.getSocketFactory();
+	m_serverSocketFactory = m_sslContext.getServerSocketFactory(); 
+	System.out.println("Changed to new socket factory");
+	
+	// end Borui Wang implementation
     }
 
     public final ServerSocket createServerSocket(String localHost,
