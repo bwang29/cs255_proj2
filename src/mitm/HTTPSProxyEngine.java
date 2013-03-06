@@ -159,35 +159,18 @@ public class HTTPSProxyEngine extends ProxyEngine
 		    //   so that we can copy those values in the certificate that we forge.
 		    //   (Recall that we, as a MITM, obtain the server's actual certificate from our own session as a client
 		    //    to that server.)
-		 
 		    remoteSocket.startHandshake();
 		    SSLSession session = remoteSocket.getSession();
-			java.security.cert.Certificate[] servercerts = session.getPeerCertificates();
-//			for (Certificate cert : servercerts) {
-//	            System.out.println("Certificate is: " + cert);
-//	            if(cert instanceof X509Certificate) {
-//	                try {
-//	                    ( (X509Certificate) cert).checkValidity();
-//	                    System.out.println("Certificate is active for current date");
-//	                } catch(Exception e) {
-//	                    System.out.println("Certificate is expired");
-//	                }
-//	            }
-//	        }
-			
-//			String first_cert_string = servercerts[0].toString();
-//			Pattern pattern  = Pattern.compile("CN=.+,");
-//			// find the DN
-//			Matcher matcher = pattern.matcher(first_cert_string);
-//			if (matcher.find() == true){
-//			    System.out.println(matcher.group());
-//			}
-			
-		    javax.security.cert.X509Certificate[] serverCertChain = null;
-		    iaik.x509.X509Certificate serverCertificate = null;
-		    Principal serverDN = null;
-		    BigInteger serverSerialNumber = null;
-
+			java.security.cert.Certificate[] servercerts = session.getPeerCertificates();		
+		    //javax.security.cert.X509Certificate[] serverCertChain = null;
+		    // its also possible to use home cooked regular expression "CN=.+," to find out DN - borui
+		    iaik.x509.X509Certificate serverCertificate = new
+		    		iaik.x509.X509Certificate(servercerts[0].getEncoded());
+		    Principal serverDN = serverCertificate.getSubjectDN();
+		    BigInteger serverSerialNumber = serverCertificate.getSerialNumber();
+		    System.out.println(serverDN);
+		    System.out.println(serverSerialNumber);
+		    // end Borui Wang implementation
 
 		    //We've already opened the socket, so might as well keep using it:
 		    m_proxySSLEngine.setRemoteSocket(remoteSocket);
