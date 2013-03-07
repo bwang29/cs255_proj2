@@ -123,7 +123,7 @@ public final class MITMSSLSocketFactory implements MITMSocketFactory
 		alias = JSSEConstants.DEFAULT_ALIAS;
 	}
 	System.out.println("keyStoreFile "+keyStoreFile);
-	System.out.println("keyStorePassword "+keyStorePassword);
+	System.out.println("keyStorePassword "+keyStorePassword.toString());
 	System.out.println("keyStoreType "+keyStoreType);
 	System.out.println("keyStoreAlias "+alias);
 
@@ -137,9 +137,7 @@ public final class MITMSSLSocketFactory implements MITMSocketFactory
 	}
 	
 	// Get our key pair and our own DN (not the remote server's DN) from the keystore.
-	KeyStore.PrivateKeyEntry pkEntry = (KeyStore.PrivateKeyEntry)
-	        ks.getEntry(alias, new KeyStore.PasswordProtection(keyStorePassword));
-	PrivateKey privateKey = pkEntry.getPrivateKey();
+	PrivateKey privateKey = (PrivateKey) keyStore.getKey(alias, keyStorePassword);
 	iaik.x509.X509Certificate certificate = new iaik.x509.X509Certificate(keyStore.getCertificate(alias).getEncoded());
 	PublicKey publicKey = certificate.getPublicKey();
 	Principal ourDN = certificate.getIssuerDN();
@@ -149,26 +147,27 @@ public final class MITMSSLSocketFactory implements MITMSocketFactory
 	System.out.println("serverDN: " + serverDN);
 
 	// create server certificate
-
-	iaik.x509.X509Certificate serverCertificate = new iaik.x509.X509Certificate();
+	iaik.x509.X509Certificate serverCertificate = new iaik.x509.X509Certificate(certificate.getEncoded());
 	serverCertificate.setIssuerDN(ourDN);
-	serverCertificate.setSubjectDN(serverDN);
 	serverCertificate.setPublicKey(publicKey);
-	serverCertificate.setSerialNumber(serialNumber);
+	serverCertificate.setSubjectDN(serverDN);
+	serverCertificate.setSerialNumber(serialNumber); 
+	serverCertificate.sign(AlgorithmID.dsaWithSHA1,privateKey);
+	X509Certificate[] certChain = new X509Certificate[1];//keyStore.getCertificateChain(alias);
+	certChain[0] = serverCertificate;
+	System.out.println("chain length: " + certChain.length);
+	keyStore.setKeyEntry(alias, privateKey, keyStorePassword, certChain);
 	
-	// save our private key to a key store
-	
-	KeyStore serverKeyStore = KeyStore.getInstance(keyStoreType);
-	serverKeyStore.load(null,keyStorePassword);
-	serverKeyStore.setCertificateEntry(alias, serverCertificate);
-	serverKeyStore.setEntry(alias, pkEntry, new KeyStore.PasswordProtection(keyStorePassword));
-	
+	// KeyStore serverKeyStore = KeyStore.getInstance(keyStoreType);
+	// serverKeyStore.load(null,keyStorePassword);
+	// serverKeyStore.setKeyEntry(alias, privateKey, keyStorePassword, certChain);
+	// serverKeyStore.setEntry(alias, pkEntry, new KeyStore.PasswordProtection(keyStorePassword));
 	
 	// setup new certificate's key factory
 	
 	final KeyManagerFactory keyManagerFactory =
 	    KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-	keyManagerFactory.init(serverKeyStore, keyStorePassword);
+	keyManagerFactory.init(keyStore, keyStorePassword);
 
 	m_sslContext = SSLContext.getInstance("SSL");
 	m_sslContext.init(keyManagerFactory.getKeyManagers(),
@@ -176,10 +175,9 @@ public final class MITMSSLSocketFactory implements MITMSocketFactory
 			  null);
 
 	m_clientSocketFactory = m_sslContext.getSocketFactory();
-	m_serverSocketFactory = m_sslContext.getServerSocketFactory(); 
-	System.out.println("Changed to new socket factory");
+	m_serverSocketFactory = m_sslContext.getServerSocketFactory();
 	
-	// end Borui Wang implementation
+	// end Borui Wang implementationw
     }
 
     public final ServerSocket createServerSocket(String localHost,
