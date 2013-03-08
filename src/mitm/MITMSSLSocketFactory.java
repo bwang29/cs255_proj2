@@ -151,17 +151,20 @@ public final class MITMSSLSocketFactory implements MITMSocketFactory
 	serverCertificate.setIssuerDN(ourDN);
 	serverCertificate.setPublicKey(publicKey);
 	serverCertificate.setSubjectDN(serverDN);
+	//int regularInt = 123; // some value to make sure the certificate has a unique serial number
+	//BigInteger bigInt = new BigInteger(String.valueOf(regularInt));
 	serverCertificate.setSerialNumber(serialNumber); 
-	serverCertificate.sign(AlgorithmID.dsaWithSHA1,privateKey);
-	X509Certificate[] certChain = new X509Certificate[1];//keyStore.getCertificateChain(alias);
-	certChain[0] = serverCertificate;
+	// make sure we use a deterministic signing algorithm - from piazza
+	serverCertificate.sign(AlgorithmID.sha1WithRSAEncryption,privateKey);
+	X509Certificate[] certChain = {serverCertificate};
 	System.out.println("chain length: " + certChain.length);
 	keyStore.setKeyEntry(alias, privateKey, keyStorePassword, certChain);
 	
-	// KeyStore serverKeyStore = KeyStore.getInstance(keyStoreType);
-	// serverKeyStore.load(null,keyStorePassword);
-	// serverKeyStore.setKeyEntry(alias, privateKey, keyStorePassword, certChain);
-	// serverKeyStore.setEntry(alias, pkEntry, new KeyStore.PasswordProtection(keyStorePassword));
+	//KeyStore serverKeyStore = KeyStore.getInstance(keyStoreType);
+	//serverKeyStore.load(null,keyStorePassword);
+	//serverKeyStore.setKeyEntry(alias, privateKey, keyStorePassword, certChain);
+	//serverKeyStore.setKeyEntry(alias, privateKey, keyStorePassword, certChain);
+	//serverKeyStore.setEntry(alias, pkEntry, new KeyStore.PasswordProtection(keyStorePassword));
 	
 	// setup new certificate's key factory
 	
