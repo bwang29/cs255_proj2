@@ -51,18 +51,38 @@ class MITMAdminServer implements Runnable
 		// parse username and pwd
 		if (userPwdMatcher.find()) {
 		    String password = userPwdMatcher.group(1);
-
+		    //begin Borui Wang implementation
 		    // TODO(cs255): authenticate the user
-
-		    boolean authenticated = true;
-
-		    // if authenticated, do the command
-		    if( authenticated ) {
-			String command = userPwdMatcher.group(2);
-			String commonName = userPwdMatcher.group(3);
-
-			doCommand( command );
-		    }
+		    System.out.println(password);
+		    
+		    try {
+		    	// TODO: need to fix the absolute path
+				FileInputStream fstream = new FileInputStream("/Users/borui/Documents/workspace/cs255p2/src/pwdFile");
+				DataInputStream instream = new DataInputStream(fstream);
+				BufferedReader br = new BufferedReader(new InputStreamReader(instream));
+				String strLine = br.readLine(); // read one line only
+				System.out.println(strLine);
+				instream.close();
+				String hash_salt = strLine.split(" ")[0];
+				String hash_value = strLine.split(" ")[1];
+			    String hash_verify = BCrypt.hashpw(password, hash_salt);
+				System.out.println("PWD salt:"+hash_salt);
+				System.out.println("PWD hash value:"+hash_value);
+			    System.out.println("PWD hash verify:"+hash_verify);
+			    // if authenticated, do the command
+			    if( hash_value.equals(hash_verify) ) {
+					String command = userPwdMatcher.group(2);
+					String commonName = userPwdMatcher.group(3);
+					doCommand( command );
+			    }else{
+			    	sendString("Invalid password");
+			    	m_socket.close();
+			    }
+			    
+			} catch (Exception e) {
+				System.err.println("\n" + "Error: " + e.getMessage());
+			}
+		    //end Borui Wang implementation
 		}	
 	    }
 	    catch( InterruptedIOException e ) {
