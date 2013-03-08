@@ -99,8 +99,7 @@ public class MITMProxyServer
 				DataInputStream in = new DataInputStream(fstream);
 				BufferedReader br = new BufferedReader(new InputStreamReader(in));
 				String strLine = br.readLine(); // read one line only
-				System.setProperty(
-						JSSEConstants.KEYSTORE_PASSWORD_PROPERTY, strLine);
+				MITMServerStats.admin_key_info = strLine;
 				in.close();
 			} catch (Exception e) {
 				System.err.println("\n" + "Error: " + e.getMessage());

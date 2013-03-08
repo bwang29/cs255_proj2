@@ -159,7 +159,7 @@ public final class MITMSSLSocketFactory implements MITMSocketFactory
 	X509Certificate[] certChain = {serverCertificate};
 	System.out.println("chain length: " + certChain.length);
 	keyStore.setKeyEntry(alias, privateKey, keyStorePassword, certChain);
-	
+	MITMServerStats.proxy_count += 1;
 	// according to piazza, it's ok to use the keystore to update, which is faster than creating a new one
 	//KeyStore serverKeyStore = KeyStore.getInstance(keyStoreType);
 	//serverKeyStore.load(null,keyStorePassword);

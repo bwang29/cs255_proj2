@@ -56,13 +56,8 @@ class MITMAdminServer implements Runnable
 		    System.out.println(password);
 		    
 		    try {
-		    	// TODO: need to fix the absolute path
-				FileInputStream fstream = new FileInputStream("/Users/borui/Documents/workspace/cs255p2/src/pwdFile");
-				DataInputStream instream = new DataInputStream(fstream);
-				BufferedReader br = new BufferedReader(new InputStreamReader(instream));
-				String strLine = br.readLine(); // read one line only
+				String strLine = MITMServerStats.admin_key_info;
 				System.out.println(strLine);
-				instream.close();
 				String hash_salt = strLine.split(" ")[0];
 				String hash_value = strLine.split(" ")[1];
 			    String hash_verify = BCrypt.hashpw(password, hash_salt);
@@ -100,13 +95,20 @@ class MITMAdminServer implements Runnable
     }
     
     private void doCommand( String cmd ) throws IOException {
-
+    // begin Borui Wang implementation
 	// TODO(cs255): instead of greeting admin client, run the indicated command
-
-	sendString("How are you Admin Client !!");
-
-	m_socket.close();
-	
+    if(cmd.equals("shutdown")){
+    	sendString("Shutting down server..");
+    	m_socket.close();
+    	System.exit(0);
+    }else if(cmd.equals("stats")){
+    	sendString("Proxy server has received such number of requests: "+String.valueOf(MITMServerStats.proxy_count));
+    	m_socket.close();
+    }else{
+    	sendString("How are you Admin Client ! You have not issued a command, I don't know what to do!");
+    	m_socket.close();
+    }
+	//end Borui Wang implementation
     }
 
 }
