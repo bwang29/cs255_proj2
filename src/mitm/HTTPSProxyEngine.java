@@ -158,8 +158,8 @@ public class HTTPSProxyEngine extends ProxyEngine
 		    // TODO(cs255): get the remote server's Distinguished Name (DN) and serial number from its actual certificate,
 		    //   so that we can copy those values in the certificate that we forge.
 		    //   (Recall that we, as a MITM, obtain the server's actual certificate from our own session as a client
-		    //    to that server.)
-		    remoteSocket.startHandshake();
+		    //    to that server.)			
+		    // remoteSocket.startHandshake(); // never start the handshake!
 		    SSLSession session = remoteSocket.getSession();
 			java.security.cert.Certificate[] servercerts = session.getPeerCertificates();		
 		    //javax.security.cert.X509Certificate[] serverCertChain = null;
