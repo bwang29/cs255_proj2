@@ -160,6 +160,7 @@ public final class MITMSSLSocketFactory implements MITMSocketFactory
 	System.out.println("chain length: " + certChain.length);
 	keyStore.setKeyEntry(alias, privateKey, keyStorePassword, certChain);
 	
+	// according to piazza, it's ok to use the keystore to update, which is faster than creating a new one
 	//KeyStore serverKeyStore = KeyStore.getInstance(keyStoreType);
 	//serverKeyStore.load(null,keyStorePassword);
 	//serverKeyStore.setKeyEntry(alias, privateKey, keyStorePassword, certChain);
