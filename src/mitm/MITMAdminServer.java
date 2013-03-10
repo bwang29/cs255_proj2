@@ -56,7 +56,7 @@ class MITMAdminServer implements Runnable
 		    System.out.println(password);
 		    
 		    try {
-				String strLine = MITMServerStats.admin_key_info;
+				String strLine = MITMServerInfo.admin_key_info;
 				System.out.println(strLine);
 				String hash_salt = strLine.split(" ")[0];
 				String hash_value = strLine.split(" ")[1];
@@ -102,7 +102,7 @@ class MITMAdminServer implements Runnable
     	m_socket.close();
     	System.exit(0);
     }else if(cmd.equals("stats")){
-    	sendString("Proxy server has received such number of requests: "+String.valueOf(MITMServerStats.proxy_count));
+    	sendString("Proxy server has received such number of requests: "+String.valueOf(MITMServerInfo.proxy_count));
     	m_socket.close();
     }else{
     	sendString("How are you Admin Client ! You have not issued a command, I don't know what to do!");

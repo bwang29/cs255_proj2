@@ -42,9 +42,9 @@ import javax.net.ssl.X509TrustManager;
  */
 public final class MITMSSLSocketFactory implements MITMSocketFactory
 {
-    ServerSocketFactory m_serverSocketFactory;
-    SocketFactory m_clientSocketFactory;
-    SSLContext m_sslContext;
+    final ServerSocketFactory m_serverSocketFactory;
+    final SocketFactory m_clientSocketFactory;
+    final SSLContext m_sslContext;
 
     public KeyStore ks = null;
 
@@ -107,7 +107,7 @@ public final class MITMSSLSocketFactory implements MITMSocketFactory
     public MITMSSLSocketFactory(Principal serverDN, BigInteger serialNumber)
 	throws IOException,GeneralSecurityException, Exception
     {
-	this();
+	// this();
 	// begin Borui Wang implementation
     // TODO(cs255): replace this with code to generate a new (forged) server certificate with a DN of serverDN
     //   and a serial number of serialNumber.
@@ -159,7 +159,7 @@ public final class MITMSSLSocketFactory implements MITMSocketFactory
 	X509Certificate[] certChain = {serverCertificate};
 	System.out.println("chain length: " + certChain.length);
 	keyStore.setKeyEntry(alias, privateKey, keyStorePassword, certChain);
-	MITMServerStats.proxy_count += 1;
+	MITMServerInfo.proxy_count += 1;
 	// according to piazza, it's ok to use the keystore to update, which is faster than creating a new one
 	//KeyStore serverKeyStore = KeyStore.getInstance(keyStoreType);
 	//serverKeyStore.load(null,keyStorePassword);
