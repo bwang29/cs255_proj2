@@ -53,17 +53,17 @@ class MITMAdminServer implements Runnable
 		    String password = userPwdMatcher.group(1);
 		    //begin Borui Wang implementation
 		    // TODO(cs255): authenticate the user
-		    System.out.println(password);
+		    // System.out.println(password);
 		    
 		    try {
 				String strLine = MITMServerInfo.admin_key_info;
-				System.out.println(strLine);
+				// System.out.println(strLine);
 				String hash_salt = strLine.split(" ")[0];
 				String hash_value = strLine.split(" ")[1];
 			    String hash_verify = BCrypt.hashpw(password, hash_salt);
-				System.out.println("PWD salt:"+hash_salt);
-				System.out.println("PWD hash value:"+hash_value);
-			    System.out.println("PWD hash verify:"+hash_verify);
+				// System.out.println("PWD salt:"+hash_salt);
+				// System.out.println("PWD hash value:"+hash_value);
+			    // System.out.println("PWD hash verify:"+hash_verify);
 			    // if authenticated, do the command
 			    if( hash_value.equals(hash_verify) ) {
 					String command = userPwdMatcher.group(2);

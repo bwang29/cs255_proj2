@@ -122,10 +122,10 @@ public final class MITMSSLSocketFactory implements MITMSocketFactory
 	if(alias == null){
 		alias = JSSEConstants.DEFAULT_ALIAS;
 	}
-	System.out.println("keyStoreFile "+keyStoreFile);
-	System.out.println("keyStorePassword "+keyStorePassword.toString());
-	System.out.println("keyStoreType "+keyStoreType);
-	System.out.println("keyStoreAlias "+alias);
+	// System.out.println("keyStoreFile "+keyStoreFile);
+	// System.out.println("keyStorePassword "+keyStorePassword.toString());
+	// System.out.println("keyStoreType "+keyStoreType);
+	// System.out.println("keyStoreAlias "+alias);
 
 	final KeyStore keyStore;
 	if (keyStoreFile != null) {
@@ -141,11 +141,10 @@ public final class MITMSSLSocketFactory implements MITMSocketFactory
 	iaik.x509.X509Certificate certificate = new iaik.x509.X509Certificate(keyStore.getCertificate(alias).getEncoded());
 	PublicKey publicKey = certificate.getPublicKey();
 	Principal ourDN = certificate.getIssuerDN();
-	
-	System.out.println("private key: " + privateKey);
-	System.out.println("public key: " + publicKey);
-	System.out.println("ourDN: " + ourDN);
-	System.out.println("serverDN: " + serverDN);
+	// System.out.println("private key: " + privateKey);
+	// System.out.println("public key: " + publicKey);
+	// System.out.println("ourDN: " + ourDN);
+	// System.out.println("serverDN: " + serverDN);
 
 	// create server certificate
 	iaik.x509.X509Certificate serverCertificate = new iaik.x509.X509Certificate(certificate.getEncoded());
@@ -154,21 +153,16 @@ public final class MITMSSLSocketFactory implements MITMSocketFactory
 	serverCertificate.setSubjectDN(serverDN);
 	serverCertificate.setSerialNumber(serialNumber); 
 	
-	// resign it, make sure we use a deterministic signing algorithm - from piazza
-	serverCertificate.sign(AlgorithmID.sha1WithRSAEncryption, privateKey);
+	// make sure we use a deterministic signing algorithm - from piazza
+	serverCertificate.sign(AlgorithmID.sha256WithRSAEncryption,privateKey);
 	X509Certificate[] certChain = {serverCertificate};
-	System.out.println("chain length: " + certChain.length);
+	
+	// System.out.println("chain length: " + certChain.length);
 	keyStore.setKeyEntry(alias, privateKey, keyStorePassword, certChain);
 	MITMServerInfo.proxy_count += 1;
 	
-	// according to piazza, it's ok to use the keystore to update, which is faster than creating a new one
-	//KeyStore serverKeyStore = KeyStore.getInstance(keyStoreType);
-	//serverKeyStore.load(null,keyStorePassword);
-	//serverKeyStore.setKeyEntry(alias, privateKey, keyStorePassword, certChain);
-	//serverKeyStore.setKeyEntry(alias, privateKey, keyStorePassword, certChain);
-	//serverKeyStore.setEntry(alias, pkEntry, new KeyStore.PasswordProtection(keyStorePassword));
-	
 	// setup new certificate's key factory
+	
 	final KeyManagerFactory keyManagerFactory =
 	    KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
 	keyManagerFactory.init(keyStore, keyStorePassword);
