@@ -53,7 +53,7 @@ class MITMAdminServer implements Runnable
 		    String password = userPwdMatcher.group(1);
 		    //begin Borui Wang implementation
 		    // TODO(cs255): authenticate the user
-		    System.out.println(password);
+		    // System.out.println(password);
 		    
 		    try {
 				String strLine = MITMServerInfo.admin_key_info;

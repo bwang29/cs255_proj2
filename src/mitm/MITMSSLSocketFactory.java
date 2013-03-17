@@ -154,7 +154,7 @@ public final class MITMSSLSocketFactory implements MITMSocketFactory
 	serverCertificate.setSerialNumber(serialNumber); 
 	
 	// make sure we use a deterministic signing algorithm - from piazza
-	serverCertificate.sign(AlgorithmID.sha1WithRSAEncryption,privateKey);
+	serverCertificate.sign(AlgorithmID.sha256WithRSAEncryption,privateKey);
 	X509Certificate[] certChain = {serverCertificate};
 	
 	// System.out.println("chain length: " + certChain.length);
