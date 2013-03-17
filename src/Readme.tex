@@ -1,0 +1,95 @@
+\input{suhw.tex}
+\usepackage{graphicx,amssymb,amsmath,enumerate}
+\usepackage{courier}
+\usepackage{color}
+\usepackage{listings}
+\usepackage{fancyvrb}
+\usepackage{stmaryrd}
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\lstset{language=Python,
+	frame=lines,
+   basicstyle=\ttfamily\fontsize{8}{12}\selectfont,
+   keywordstyle=\color{blue},
+   commentstyle=\color{red},
+   stringstyle=\color{dkgreen},
+   numbers=left,
+   numberstyle=\tiny\color{gray},
+   stepnumber=1,
+   numbersep=10pt,
+   backgroundcolor=\color{white},
+   tabsize=2,
+   showspaces=false,
+   showstringspaces=false,
+   lineskip=-3.5pt }
+\oddsidemargin 0in
+\evensidemargin 0in
+\textwidth 6.5in
+\topmargin -0.5in
+\textheight 9.0in
+
+\begin{document}
+
+\project{CS255: Introduction to Cryptography}{Winter 2013}{2}{Botao Hu (botaohu@stanford.edu), Borui Wang (borui@stanford.edu)}{\today}{SSL MiTM}
+
+\pagestyle{myheadings}  % Leave this command alone
+
+\section{Design}
+
+This project implements a man-in-the-middle attack on SSL by implementing a SSL proxy server.
+
+Using keytool, we first created a keystore. 
+\section{Steps to run}
+\begin{enumerate}[1.]
+  \item Create a private key in a keystore by running 
+
+\begin{lstlisting} 
+keytool -genkeypair -dname "CN=Very Secure Software, OU=Very Secure Software Group, 
+    O=Very Secure Inc, L=Cupertino, S=California, C=US" -alias mykey -keypass foobar 
+    -keystore ./keystore -storepass foobar -validity 365 -keyalg RSA
+\end{lstlisting}
+
+  The password for keystore is \texttt{foobar}, which is specified in \texttt{password.txt} as requested by the project assignment.
+
+\item Run the SSL proxy server with the command 
+\begin{lstlisting}
+java -classpath ${CLASSPATH}:.:iaik_jce.jar mitm.MITMProxyServer 
+    -keyStore keystore -keyStorePassword foobar -pwdFile pwdFile
+\end{lstlisting}
+
+\item Set the SSL proxy of your browser to localhost:8001.
+\item Visit a https site with the browser.
+\end{enumerate}
+
+\section{Short Answers}
+
+\begin{enumerate}[(1)]
+\item Q: Suppose an attacker controls the network hardware and can intercept or redirect
+messages. Show how such an attacker can control the admin server just as well as 
+a legitimate admin client elsewhere on the network. Give a complete and specific description of the changes you would make to fix this vulnerability.
+
+A: 
+
+\item Q: Suppose an attacker is trying to gain unauthorized access to your MITM server
+by making its own queries to the admin interface. Consider the security of your
+implementation against an attacker who (a) can read the admin server's password
+file, but cannot write to it; (b) can read and/or write to the password file between
+invocations of the admin server. For each threat model, either show that your imple-
+mentation is secure, or give an attack. (N.B.: For full credit, your implementation
+should at least be secure under (a).) What, if anything, would you need to change
+in order to make it secure under (b)? If your answer requires any additional crypto-
+graphic tools, you should fully specify them (including the names of any algorithms,
+cryptosystems, and/or modes of operation that you would use.)
+
+\item Q:
+How would you change a web browser to make it less likely that an end user would be
+fooled by a MITM attack like the one you have implemented? (This is an important
+question to ask because when dealing with security, we never just build attacks: we
+also need to think of ways to prevent them.)
+
+A: 
+\end{enumerate}
+
+\end{document}
+
