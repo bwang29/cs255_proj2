@@ -168,8 +168,8 @@ public class HTTPSProxyEngine extends ProxyEngine
 		    		iaik.x509.X509Certificate(servercerts[0].getEncoded());
 		    Principal serverDN = serverCertificate.getSubjectDN();
 		    BigInteger serverSerialNumber = serverCertificate.getSerialNumber();
-		    System.out.println(serverDN);
-		    System.out.println(serverSerialNumber);
+		    // System.out.println(serverDN);
+		    // System.out.println(serverSerialNumber);
 		    // end Borui Wang implementation
 
 		    //We've already opened the socket, so might as well keep using it:
