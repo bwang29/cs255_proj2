@@ -35,32 +35,77 @@
 
 \pagestyle{myheadings}  % Leave this command alone
 
+\section{Introduction}
+We developed an SSL proxy that implements a man-in-the-middle (MiTM) attack on SSL. 
+Our proxy is controlled an admin communication channel through a separate secure SSL connection. The client requires a password authentication to execute commands through the admin communication channel.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=0.7\textwidth]{proxy.eps}
+\caption{Illustration of how MiTM proxy works}
+\label{fig:diag}
+\end{figure}
+
+
 \section{Design}
 
-This project implements a man-in-the-middle attack on SSL by implementing a SSL proxy server.
+\subsection{Key Generation}
 
-Using keytool, we first created a keystore. 
+First we generate a keyStore for the MITM's CA(issuer) information. We named our CA ``Very Secure Software'' with its location located at Cupertino, California, and we signed the private key using RSA algorithm. The keyStore is under the alias my key and it uses password  ``foobar'' for verification:
+
+\begin{lstlisting} 
+keytool -genkeypair -dname "CN=Very Secure Software, OU=Very Secure Software Group, 
+    O=Very Secure Inc, L=Cupertino, S=California, C=US" -alias mykey -keypass <password> 
+    -keystore ./keystore -storepass <storepassword> -validity 365 -keyalg RSA
+\end{lstlisting}
+
+\subsection{SSL MiTM}
+
+To trick the browser into thinking that it receives a legit certificate from its intended remote server, we need to use the DN(such as the domain's common name, the organization name ,etc. ) and serial number of the original certificate from the remote site but changes its key into our public key, where the certificate is signed by our private key. 
+
+In order to do so, whenever we receive a ssl CONNECT request, we send the same request to the remote server.  Once the server sends back its certificate to us, we look up and extract the DN and serial number of the certificate in the ssl session. Then we create a new certificate on the live that and make it appears to be issued to the same DN with the same serial number we get from the remote server. However, we add to the certificate the DN information of the issuer we created and its public key to make it appears to be issued by Very Secure Software. Then we sign the certificate using our private key with a deterministic algorithm (we use SHA256 with RSA) and send back our forged certificate to the browser. The browser will think that our certificate is from the remote site because it's DN matches the remote site's information and the verification on the certificate using the public key we provide is successful. 
+
+The whole process is demostrated in the figure \ref{fig:diag}. 
+
+\subsection{Admin Communication Channel \& Password Authentication} 
+For the sever admin access, we generate a salted password hash using BCrypt and stored the value into pwdFile manually. 
+
+The code adopting BCrypt library to generate a password hash and the salt is listed below. 
+\begin{lstlisting}
+  salt = BCrypt.gensalt();
+  hash = BCrypt.hashpw(password, salt);
+\end{lstlisting}
+
+When the server starts, we read the hash and salt value from the pwdFile and later use it to verify if the provided admin password is correct by hashing the provided value with the salt and see if they equal to the hash value we have in pwdFile. 
+
+
 \section{Steps to run}
-\begin{enumerate}[1.]
+\begin{enumerate}[(1)]
   \item Create a private key in a keystore by running 
 
 \begin{lstlisting} 
 keytool -genkeypair -dname "CN=Very Secure Software, OU=Very Secure Software Group, 
-    O=Very Secure Inc, L=Cupertino, S=California, C=US" -alias mykey -keypass foobar 
-    -keystore ./keystore -storepass foobar -validity 365 -keyalg RSA
+    O=Very Secure Inc, L=Cupertino, S=California, C=US" -alias mykey -keypass <password> 
+    -keystore ./keystore -storepass <storepassword> -validity 365 -keyalg RSA
 \end{lstlisting}
-
-  The password for keystore is \texttt{foobar}, which is specified in \texttt{password.txt} as requested by the project assignment.
 
 \item Run the SSL proxy server with the command 
 \begin{lstlisting}
 java -classpath ${CLASSPATH}:.:iaik_jce.jar mitm.MITMProxyServer 
-    -keyStore keystore -keyStorePassword foobar -pwdFile pwdFile -output
+    -keyStore keystore -keyStorePassword <storepassword> -pwdFile pwdFile -output
 \end{lstlisting}
+
+\item Send command to the admin server with the command 
+\begin{lstlisting}
+java -classpath ${CLASSPATH}:.:iaik_jce.jar mitm.MITMAdminClient -password <password> -cmd 
+  <shutdown|stats>
+\end{lstlisting}
+
 
 \item Set the SSL proxy of your browser to localhost:8001.
 \item Visit a https site with the browser.
 \end{enumerate}
+
 
 \section{Short Answers}
 

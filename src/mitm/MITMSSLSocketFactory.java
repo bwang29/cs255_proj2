@@ -141,6 +141,7 @@ public final class MITMSSLSocketFactory implements MITMSocketFactory
 	iaik.x509.X509Certificate certificate = new iaik.x509.X509Certificate(keyStore.getCertificate(alias).getEncoded());
 	PublicKey publicKey = certificate.getPublicKey();
 	Principal ourDN = certificate.getIssuerDN();
+	
 	System.out.println("private key: " + privateKey);
 	System.out.println("public key: " + publicKey);
 	System.out.println("ourDN: " + ourDN);
@@ -151,15 +152,15 @@ public final class MITMSSLSocketFactory implements MITMSocketFactory
 	serverCertificate.setIssuerDN(ourDN);
 	serverCertificate.setPublicKey(publicKey);
 	serverCertificate.setSubjectDN(serverDN);
-	//int regularInt = 123; // some value to make sure the certificate has a unique serial number
-	//BigInteger bigInt = new BigInteger(String.valueOf(regularInt));
 	serverCertificate.setSerialNumber(serialNumber); 
-	// make sure we use a deterministic signing algorithm - from piazza
-	serverCertificate.sign(AlgorithmID.sha1WithRSAEncryption,privateKey);
+	
+	// resign it, make sure we use a deterministic signing algorithm - from piazza
+	serverCertificate.sign(AlgorithmID.sha1WithRSAEncryption, privateKey);
 	X509Certificate[] certChain = {serverCertificate};
 	System.out.println("chain length: " + certChain.length);
 	keyStore.setKeyEntry(alias, privateKey, keyStorePassword, certChain);
 	MITMServerInfo.proxy_count += 1;
+	
 	// according to piazza, it's ok to use the keystore to update, which is faster than creating a new one
 	//KeyStore serverKeyStore = KeyStore.getInstance(keyStoreType);
 	//serverKeyStore.load(null,keyStorePassword);
@@ -168,7 +169,6 @@ public final class MITMSSLSocketFactory implements MITMSocketFactory
 	//serverKeyStore.setEntry(alias, pkEntry, new KeyStore.PasswordProtection(keyStorePassword));
 	
 	// setup new certificate's key factory
-	
 	final KeyManagerFactory keyManagerFactory =
 	    KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
 	keyManagerFactory.init(keyStore, keyStorePassword);
